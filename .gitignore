@@ -1,0 +1,21 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.env
+
+# VS Code / PyCharm settings
+.vscode/
+.idea/
+
+# macOS files
+.DS_Store
+
+# Logs
+*.log
+
+# Ollama cache (optional, if you clone models into project dir)
+ollama_models/
