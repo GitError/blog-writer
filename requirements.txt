@@ -9,3 +9,5 @@ accelerate
 safetensors
 torch
 pillow
+keybert
+sentence-transformers

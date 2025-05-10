@@ -1,27 +1,29 @@
 # 🧠 Auto Blog Writer
 
-An automated Python tool that fetches trending tech articles from RSS feeds, uses a local LLM (via Ollama) to generate blog posts in Markdown, injects AI-generated images via Stable Diffusion, and (optionally) publishes them to a WordPress blog.
+A fully automated Python tool that turns tech news into AI-generated blog posts with images. It fetches RSS content, summarizes it with local LLMs via Ollama, extracts keywords with KeyBERT, generates realistic images using Stable Diffusion, saves it all as Markdown, and optionally publishes to WordPress.
 
 ---
 
 ## 🚀 Features
 
-- ✅ Pulls fresh tech content from curated RSS feeds  
-- 🧠 Uses **Ollama** + open-source LLMs (e.g., Mistral) to generate blog content  
-- 🎨 Generates images locally with **Stable Diffusion** based on category/topic  
-- ✍️ Saves posts in **Markdown** with embedded images  
-- 💾 Drafts saved locally under `drafts/` with timestamped filenames  
-- 🌐 WordPress publishing via REST API (optional toggle)  
-- 📰 Supports multiple tech categories: AI, Cybersecurity, Startups, Gadgets, Programming, Cloud  
+- ✅ Pulls fresh tech articles from RSS feeds  
+- 🧠 Summarizes stories with local **LLMs (Ollama + Mistral)**  
+- 🗝️ Extracts smart image prompts using **KeyBERT**  
+- 🎨 Generates images locally using **Stable Diffusion** (e.g., `RealisticVision`)  
+- ✍️ Embeds image and content into Markdown blog posts  
+- 💾 Saves drafts into `drafts/` folder  
+- 🌐 Optionally publishes to **WordPress** via REST API  
+- 🧠 CLI flags for category targeting and publishing  
 
 ---
 
 ## 🧱 Requirements
 
 - Python 3.8+
-- [Ollama](https://ollama.com) installed and running locally
-- [HuggingFace Diffusers](https://github.com/huggingface/diffusers) for image generation
-- [Stable Diffusion](https://huggingface.co/runwayml/stable-diffusion-v1-5) (default model)
+- [Ollama](https://ollama.com)
+- [KeyBERT](https://github.com/MaartenGr/KeyBERT)
+- [HuggingFace Diffusers](https://github.com/huggingface/diffusers)
+- A [Stable Diffusion model](https://huggingface.co/runwayml/stable-diffusion-v1-5) or custom one (e.g., `RealisticVision`)
 - WordPress site with Application Password enabled (optional)
 
 ---
@@ -29,23 +31,18 @@ An automated Python tool that fetches trending tech articles from RSS feeds, use
 ## 📦 Installation
 
 ```bash
-git clone https://github.com/youruser/auto-blog-writer.git
-cd auto-blog-writer
+git clone https://github.com/giterror/blog-writer.git
+cd blog-writer
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-```
-
-Also install image generation dependencies:
-```bash
-pip install diffusers transformers accelerate safetensors torch pillow
 ```
 
 ---
 
 ## ⚙️ Configuration
 
-Create a `.env` file in the root with the following:
+Create a `.env` file:
 
 ```env
 WP_URL=https://yourdomain.com/wp-json/wp/v2/posts
@@ -53,74 +50,73 @@ WP_USER=your_wp_username
 WP_APP_PASS=your_wordpress_app_password
 OLLAMA_MODEL=mistral
 OLLAMA_URL=http://localhost:11434/api/chat
-SD_MODEL_ID=runwayml/stable-diffusion-v1-5
+SD_MODEL_ID=SG161222/Realistic_Vision_V5.1_noVAE
 ```
 
 ---
 
 ## 🧪 Usage
 
-### Run in Dry Mode (generate only)
+### Run all categories (no publishing):
 ```bash
 python main.py
 ```
 
-This will:
-- Pull RSS stories for each tech category
-- Summarize them via LLM (Ollama)
-- Generate a local image using Stable Diffusion
-- Save the blog post with embedded image to `/drafts/*.md`
+### Run a specific category:
+```bash
+python main.py --category ai
+```
 
-### Publish to WordPress
-Uncomment this line in `main.py`:
-```python
-# publish_to_wordpress(title, content_with_image, tags=[category])
+### Publish to WordPress:
+```bash
+python main.py --publish
+```
+
+### Run a specific category and publish:
+```bash
+python main.py --category cloud --publish
 ```
 
 ---
 
-## 🖼️ Image Generation
+## 🎨 Standalone Image CLI
 
-We use `image_gen_cli.py` to:
-- Generate an image using a prompt (e.g., the category name)
-- Save it to `generated_images/`
-- Inject it at the top of the corresponding `.md` file
+You can manually generate and inject images with:
 
-You can run it independently:
 ```bash
-python image_gen_cli.py "cloud infrastructure" drafts/2024-05-10-cloud-digest.md
+python image_gen_cli.py "AI-powered cybersecurity" drafts/2025-05-10-cybersecurity-digest.md
 ```
 
 ---
 
 ## 📂 Output
 
-- Markdown blog drafts saved to `drafts/`
-- Images saved to `generated_images/`
-- Files are cleanly timestamped and formatted
+- Markdown drafts: `drafts/YYYY-MM-DD-category-digest.md`
+- Generated images: `generated_images/*.png`
+- Prompts are intelligently extracted from blog content
 
 ---
 
 ## 🧠 Powered By
 
 - [Ollama](https://ollama.com)
-- [Stable Diffusion](https://huggingface.co/runwayml/stable-diffusion-v1-5)
+- [Stable Diffusion](https://huggingface.co/models)
 - [Feedparser](https://pythonhosted.org/feedparser/)
+- [KeyBERT](https://github.com/MaartenGr/KeyBERT)
 - [WordPress REST API](https://developer.wordpress.org/rest-api/)
-- Markdown + Local AI 🔥
 
 ---
 
 ## 📌 Roadmap
 
-- [ ] CLI flags (`--category`, `--no-image`, `--publish`)
-- [ ] Tag extraction from content
-- [ ] Category subfolders
-- [ ] Metadata front matter support
-- [ ] Optional remote image fallback (Unsplash API)
+- [ ] Add `--dry-run` to skip image generation/publishing  
+- [ ] Add front matter/YAML metadata to Markdown  
+- [ ] Support custom tag injection  
+- [ ] Add scheduler via cron or APScheduler  
+- [ ] Optional Unsplash image fallback once API is approved  
 
 ---
 
 ## 👨‍💻 Author
 
-Made by [@giterror](https://giterror.com) — write less, post more, automate everything.
+Built by [@giterror](https://giterror.com) — automate your content pipeline like a boss.

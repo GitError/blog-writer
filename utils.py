@@ -3,6 +3,7 @@ import os
 import requests
 from dotenv import load_dotenv
 from datetime import datetime
+from keybert import KeyBERT
 
 def load_env():
     load_dotenv()
@@ -21,11 +22,12 @@ def fetch_articles(feed_urls, max_articles=3):
             break
     return "\n\n".join(f"{i+1}. {a}" for i, a in enumerate(articles))
 
-def save_draft_to_md(title, content, category):
+def save_draft_to_md(title, content, category, filename=None):
     """Save generated content to a Markdown file."""
-    safe_title = "-".join(title.lower().split()).replace("--", "-")
-    date_str = datetime.now().strftime("%Y-%m-%d")
-    filename = f"drafts/{date_str}-{safe_title}.md"
+    if not filename:
+        safe_title = "-".join(title.lower().split()).replace("--", "-").replace("(", "").replace(")", "")
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        filename = f"drafts/{date_str}-{safe_title}.md"
 
     os.makedirs("drafts", exist_ok=True)
     with open(filename, "w", encoding="utf-8") as f:
@@ -33,6 +35,7 @@ def save_draft_to_md(title, content, category):
         f.write(content.strip())
 
     print(f"📄 Draft saved: {filename}")
+    return filename
 
 def get_unsplash_image(query):
     access_key = os.getenv("UNSPLASH_ACCESS_KEY")
@@ -56,3 +59,11 @@ def insert_image_markdown(content, image_url, alt_text="Related image"):
     if image_url:
         return f"![{alt_text}]({image_url})\n\n" + content
     return content
+
+def build_image_prompt(category, content):
+    kw_model = KeyBERT()
+    keywords = kw_model.extract_keywords(content, stop_words='english', top_n=5)
+    if not keywords:
+        return category
+    keyword_str = ", ".join([kw for kw, _ in keywords])
+    return f"{category} concept: {keyword_str}"

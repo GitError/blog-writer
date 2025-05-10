@@ -1,25 +1,27 @@
 import os
 import argparse
 from datetime import datetime
-
 from diffusers import StableDiffusionPipeline
 import torch
 from PIL import Image
 
 def load_model():
-    model_id = os.getenv("SD_MODEL_ID", "runwayml/stable-diffusion-v1-5")
+    model_id = os.getenv("SD_MODEL_ID", "SG161222/Realistic_Vision_V5.1_noVAE")
     pipe = StableDiffusionPipeline.from_pretrained(
         model_id,
-        torch_dtype=torch.float32
+        torch_dtype=torch.float32,
+        safety_checker=None,
+        feature_extractor=None
     ).to("cuda" if torch.cuda.is_available() else "cpu")
-    pipe.safety_checker = lambda images, **kwargs: (images, [False] * len(images))
+    def dummy_checker(images, device, dtype=None):
+        return images, [False] * len(images)
+    pipe.run_safety_checker = dummy_checker
     return pipe
 
 def generate_image(prompt, output_dir="generated_images"):
     pipe = load_model()
     os.makedirs(output_dir, exist_ok=True)
-
-    image = pipe(prompt).images[0]
+    image = pipe(prompt, height=384, width=640).images[0]
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     filename = f"{output_dir}/{prompt.replace(' ', '_')[:40]}_{timestamp}.png"
     print(f"✅ Image generated, attempting to save to: {filename}")
@@ -30,7 +32,7 @@ def inject_image_to_markdown(md_file, image_path):
     with open(md_file, "r", encoding="utf-8") as f:
         content = f.read()
 
-    image_markdown = f"![Generated image]({image_path})\n\n"
+    image_markdown = f"![Generated image](../{image_path})\n\n"
     if image_markdown not in content:
         content = image_markdown + content
 
