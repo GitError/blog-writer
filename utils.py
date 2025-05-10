@@ -35,11 +35,10 @@ def save_draft_to_md(title, content, category):
     print(f"📄 Draft saved: {filename}")
 
 def get_unsplash_image(query):
-    """Fetch a relevant image URL from Unsplash."""
     access_key = os.getenv("UNSPLASH_ACCESS_KEY")
-    if not access_key:
-        print("⚠️ No Unsplash API key set. Skipping image.")
-        return None
+    if not access_key or access_key == "DEMO_ACCESS_KEY":
+        print(f"⚠️ Using placeholder image for '{query}'")
+        return f"https://via.placeholder.com/800x400.png?text={query.replace(' ', '+').title()}"
 
     try:
         response = requests.get(
@@ -51,7 +50,7 @@ def get_unsplash_image(query):
         return data.get("urls", {}).get("regular")
     except Exception as e:
         print("⚠️ Failed to fetch image:", e)
-        return None
+        return f"https://via.placeholder.com/800x400.png?text={query.replace(' ', '+').title()}"
 
 def insert_image_markdown(content, image_url, alt_text="Related image"):
     if image_url:
