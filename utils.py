@@ -1,5 +1,6 @@
 import feedparser
 import os
+import requests
 from dotenv import load_dotenv
 from datetime import datetime
 
@@ -32,3 +33,27 @@ def save_draft_to_md(title, content, category):
         f.write(content.strip())
 
     print(f"📄 Draft saved: {filename}")
+
+def get_unsplash_image(query):
+    """Fetch a relevant image URL from Unsplash."""
+    access_key = os.getenv("UNSPLASH_ACCESS_KEY")
+    if not access_key:
+        print("⚠️ No Unsplash API key set. Skipping image.")
+        return None
+
+    try:
+        response = requests.get(
+            "https://api.unsplash.com/photos/random",
+            params={"query": query, "orientation": "landscape"},
+            headers={"Authorization": f"Client-ID {access_key}"}
+        )
+        data = response.json()
+        return data.get("urls", {}).get("regular")
+    except Exception as e:
+        print("⚠️ Failed to fetch image:", e)
+        return None
+
+def insert_image_markdown(content, image_url, alt_text="Related image"):
+    if image_url:
+        return f"![{alt_text}]({image_url})\n\n" + content
+    return content

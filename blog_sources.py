@@ -14,5 +14,13 @@ CATEGORIES = {
     "gadgets": [
         "https://www.theverge.com/rss/index.xml",
         "https://www.engadget.com/rss.xml",
+    ],
+    "programming": [
+        "https://realpython.com/atom.xml",
+        "https://dev.to/feed",
+    ],
+    "cloud": [
+        "https://aws.amazon.com/blogs/aws/feed/",
+        "https://cloud.google.com/blog/rss/",
     ]
 }
