@@ -1,19 +1,18 @@
 # 🧠 Auto Blog Writer
 
-An automated Python tool that fetches trending tech articles from RSS feeds, uses a local LLM (via Ollama) to generate blog posts in Markdown, optionally adds Unsplash images, and (optionally) publishes them to a WordPress blog.
+An automated Python tool that fetches trending tech articles from RSS feeds, uses a local LLM (via Ollama) to generate blog posts in Markdown, injects AI-generated images via Stable Diffusion, and (optionally) publishes them to a WordPress blog.
 
 ---
 
 ## 🚀 Features
 
 - ✅ Pulls fresh tech content from curated RSS feeds  
-- 🧠 Uses **Ollama** + open-source LLMs (e.g., Mistral) to generate readable blog posts  
-- 🖼️ Inserts relevant **Unsplash images** at the top of posts  
-- ✍️ Outputs posts in **Markdown** format  
-- 💾 Saves drafts locally as `.md` files (date-based, per category)  
-- 🔒 Supports **dry run mode** (no accidental publishing)  
-- 📰 Multi-category support: AI, Cybersecurity, Startups, Gadgets, Programming, Cloud  
-- 🌐 WordPress integration via REST API (optional)  
+- 🧠 Uses **Ollama** + open-source LLMs (e.g., Mistral) to generate blog content  
+- 🎨 Generates images locally with **Stable Diffusion** based on category/topic  
+- ✍️ Saves posts in **Markdown** with embedded images  
+- 💾 Drafts saved locally under `drafts/` with timestamped filenames  
+- 🌐 WordPress publishing via REST API (optional toggle)  
+- 📰 Supports multiple tech categories: AI, Cybersecurity, Startups, Gadgets, Programming, Cloud  
 
 ---
 
@@ -21,9 +20,9 @@ An automated Python tool that fetches trending tech articles from RSS feeds, use
 
 - Python 3.8+
 - [Ollama](https://ollama.com) installed and running locally
-- WordPress site with Application Password enabled
-- [Unsplash API Key](https://unsplash.com/developers) (optional but recommended)
-- (Optional) Virtual environment
+- [HuggingFace Diffusers](https://github.com/huggingface/diffusers) for image generation
+- [Stable Diffusion](https://huggingface.co/runwayml/stable-diffusion-v1-5) (default model)
+- WordPress site with Application Password enabled (optional)
 
 ---
 
@@ -35,6 +34,11 @@ cd auto-blog-writer
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+```
+
+Also install image generation dependencies:
+```bash
+pip install diffusers transformers accelerate safetensors torch pillow
 ```
 
 ---
@@ -49,64 +53,74 @@ WP_USER=your_wp_username
 WP_APP_PASS=your_wordpress_app_password
 OLLAMA_MODEL=mistral
 OLLAMA_URL=http://localhost:11434/api/chat
-UNSPLASH_ACCESS_KEY=your_unsplash_api_key
+SD_MODEL_ID=runwayml/stable-diffusion-v1-5
 ```
 
 ---
 
 ## 🧪 Usage
 
-### Dry Run (Preview only)
-
+### Run in Dry Mode (generate only)
 ```bash
 python main.py
 ```
 
 This will:
-- Pull latest articles per category
-- Generate blog content in Markdown using Ollama
-- Fetch a relevant image from Unsplash per category
-- Print and save the draft locally to `/drafts/*.md`
+- Pull RSS stories for each tech category
+- Summarize them via LLM (Ollama)
+- Generate a local image using Stable Diffusion
+- Save the blog post with embedded image to `/drafts/*.md`
 
-### Enable WordPress Publishing
-
-In `main.py`, uncomment:
-
+### Publish to WordPress
+Uncomment this line in `main.py`:
 ```python
 # publish_to_wordpress(title, content_with_image, tags=[category])
 ```
 
-Then run again.
+---
+
+## 🖼️ Image Generation
+
+We use `image_gen_cli.py` to:
+- Generate an image using a prompt (e.g., the category name)
+- Save it to `generated_images/`
+- Inject it at the top of the corresponding `.md` file
+
+You can run it independently:
+```bash
+python image_gen_cli.py "cloud infrastructure" drafts/2024-05-10-cloud-digest.md
+```
 
 ---
 
 ## 📂 Output
 
-- Drafts saved under `/drafts/` directory
-- Filename format: `YYYY-MM-DD-title-digest.md`
-- Includes `# Title`, inserted image, and full post content
+- Markdown blog drafts saved to `drafts/`
+- Images saved to `generated_images/`
+- Files are cleanly timestamped and formatted
 
 ---
 
-## 🧠 Powered by
+## 🧠 Powered By
 
-- [Ollama](https://ollama.com) – Local LLMs made easy  
-- [Feedparser](https://pythonhosted.org/feedparser/) – RSS parsing  
-- [Unsplash API](https://unsplash.com/developers) – Image sourcing  
-- [WordPress REST API](https://developer.wordpress.org/rest-api/) – Blog publishing  
-- Python + Markdown + Local AI  
-
----
-
-## 📌 To Do
-
-- [ ] CLI flags (`--publish`, `--category`, `--no-image`)
-- [ ] Retry handling for empty RSS feeds
-- [ ] Image caching / alt text generation
-- [ ] Cron integration or `schedule` module support
+- [Ollama](https://ollama.com)
+- [Stable Diffusion](https://huggingface.co/runwayml/stable-diffusion-v1-5)
+- [Feedparser](https://pythonhosted.org/feedparser/)
+- [WordPress REST API](https://developer.wordpress.org/rest-api/)
+- Markdown + Local AI 🔥
 
 ---
 
-## 🧠 Author
+## 📌 Roadmap
 
-Built by [@giterror](https://giterror.com) — because real devs automate their blogs too.
+- [ ] CLI flags (`--category`, `--no-image`, `--publish`)
+- [ ] Tag extraction from content
+- [ ] Category subfolders
+- [ ] Metadata front matter support
+- [ ] Optional remote image fallback (Unsplash API)
+
+---
+
+## 👨‍💻 Author
+
+Made by [@giterror](https://giterror.com) — write less, post more, automate everything.

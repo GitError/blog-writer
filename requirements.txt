@@ -3,3 +3,9 @@ feedparser
 python-dotenv
 schedule
 markdown
+diffusers
+transformers
+accelerate
+safetensors
+torch
+pillow
