@@ -1,30 +1,29 @@
-# 🧠 Auto Blog Writer
+# 🧠 Blog Writer
 
-A fully automated Python tool that turns tech news into AI-generated blog posts with images. It fetches RSS content, summarizes it with local LLMs via Ollama, extracts keywords with KeyBERT, generates realistic images using Stable Diffusion, saves it all as Markdown, and optionally publishes to WordPress.
+A fully automated Python tool that fetches tech news from RSS feeds, generates blog posts using local LLMs, extracts smart tags with KeyBERT, generates realistic images via Stable Diffusion, and saves it all in Markdown — optionally publishing to WordPress.
 
 ---
 
 ## 🚀 Features
 
-- ✅ Pulls fresh tech articles from RSS feeds  
-- 🧠 Summarizes stories with local **LLMs (Ollama + Mistral)**  
-- 🗝️ Extracts smart image prompts using **KeyBERT**  
-- 🎨 Generates images locally using **Stable Diffusion** (e.g., `RealisticVision`)  
-- ✍️ Embeds image and content into Markdown blog posts  
-- 💾 Saves drafts into `drafts/` folder  
-- 🌐 Optionally publishes to **WordPress** via REST API  
-- 🧠 CLI flags for category targeting and publishing  
+- ✅ Pulls curated tech content from RSS feeds
+- 🧠 Summarizes using local LLMs via Ollama
+- 🗝️ Extracts SEO-friendly tags via KeyBERT
+- 🎨 Optional image generation via Stable Diffusion
+- ✍️ Saves clean Markdown with YAML front matter
+- 🔗 Automatically appends source links for attribution
+- 🌐 Optional one-click publishing to WordPress
 
 ---
 
 ## 🧱 Requirements
 
 - Python 3.8+
-- [Ollama](https://ollama.com)
-- [KeyBERT](https://github.com/MaartenGr/KeyBERT)
-- [HuggingFace Diffusers](https://github.com/huggingface/diffusers)
-- A [Stable Diffusion model](https://huggingface.co/runwayml/stable-diffusion-v1-5) or custom one (e.g., `RealisticVision`)
-- WordPress site with Application Password enabled (optional)
+- [Ollama](https://ollama.com) running locally (for LLM generation)
+- [KeyBERT](https://github.com/MaartenGr/KeyBERT) for tags
+- [Diffusers](https://github.com/huggingface/diffusers) for image generation
+- WordPress site (REST API + Application Password)
+- Optional: `RealisticVision` or similar high-quality Stable Diffusion model
 
 ---
 
@@ -36,20 +35,21 @@ cd blog-writer
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+pip install keybert sentence-transformers diffusers transformers accelerate safetensors torch pillow
 ```
 
 ---
 
 ## ⚙️ Configuration
 
-Create a `.env` file:
+Create a `.env` file in the root:
 
 ```env
 WP_URL=https://yourdomain.com/wp-json/wp/v2/posts
 WP_USER=your_wp_username
 WP_APP_PASS=your_wordpress_app_password
 OLLAMA_MODEL=mistral
-OLLAMA_URL=http://localhost:11434/api/chat
+OLLAMA_URL=http://localhost:11434/api/generate
 SD_MODEL_ID=SG161222/Realistic_Vision_V5.1_noVAE
 ```
 
@@ -57,14 +57,19 @@ SD_MODEL_ID=SG161222/Realistic_Vision_V5.1_noVAE
 
 ## 🧪 Usage
 
-### Run all categories (no publishing):
+### Generate everything (default):
 ```bash
 python main.py
 ```
 
-### Run a specific category:
+### Run for a specific category:
 ```bash
 python main.py --category ai
+```
+
+### Skip image generation:
+```bash
+python main.py --no-image
 ```
 
 ### Publish to WordPress:
@@ -72,28 +77,28 @@ python main.py --category ai
 python main.py --publish
 ```
 
-### Run a specific category and publish:
+### Combine flags:
 ```bash
-python main.py --category cloud --publish
-```
-
----
-
-## 🎨 Standalone Image CLI
-
-You can manually generate and inject images with:
-
-```bash
-python image_gen_cli.py "AI-powered cybersecurity" drafts/2025-05-10-cybersecurity-digest.md
+python main.py --category cloud --no-image --publish
 ```
 
 ---
 
 ## 📂 Output
 
-- Markdown drafts: `drafts/YYYY-MM-DD-category-digest.md`
-- Generated images: `generated_images/*.png`
-- Prompts are intelligently extracted from blog content
+- `drafts/YYYY-MM-DD-category-digest.md`: your Markdown posts
+- Front matter includes:
+  ```yaml
+  ---
+  title: "AI Digest"
+  date: 2025-05-10
+  category: ai
+  tags: ["ai", "innovation", "llms"]
+  image: "generated_images/ai_digest.png"
+  ---
+  ```
+- Markdown ends with a `## Sources` section linking original articles
+- Images (if enabled) saved in `/generated_images/`
 
 ---
 
@@ -101,22 +106,24 @@ python image_gen_cli.py "AI-powered cybersecurity" drafts/2025-05-10-cybersecuri
 
 - [Ollama](https://ollama.com)
 - [Stable Diffusion](https://huggingface.co/models)
-- [Feedparser](https://pythonhosted.org/feedparser/)
 - [KeyBERT](https://github.com/MaartenGr/KeyBERT)
 - [WordPress REST API](https://developer.wordpress.org/rest-api/)
+- [Feedparser](https://pythonhosted.org/feedparser/)
 
 ---
 
 ## 📌 Roadmap
 
-- [ ] Add `--dry-run` to skip image generation/publishing  
-- [ ] Add front matter/YAML metadata to Markdown  
-- [ ] Support custom tag injection  
-- [ ] Add scheduler via cron or APScheduler  
-- [ ] Optional Unsplash image fallback once API is approved  
+- [ ] Code snippet detection and formatting
+- [ ] Post structuring with subheadings via LLM
+- [ ] Image placement reasoning (top/mid/bottom)
+- [ ] Tag enrichment using LLMs beyond KeyBERT
+- [ ] Scheduled publishing (cron or APScheduler)
+- [ ] Git commit + push each draft
+- [ ] JSON feed export alongside Markdown
 
 ---
 
 ## 👨‍💻 Author
 
-Built by [@giterror](https://giterror.com) — automate your content pipeline like a boss.
+Made by [@giterror](https://giterror.com) — for devs who want to automate without compromising quality.
